@@ -1,65 +1,42 @@
-import sys
-
-import  pygame
+import pygame
 from settings import Settings
 from ship import Ship
-import game_functions as gf
+import game_function as gf
 from pygame.sprite import Group
-from game_stats import GameStats
-from button import Button
-from scoreboard import Scoreboard
+from gamestats import GameStats
+from alien import  Alien
 
 def run_game():
-    # Initialize game and create a screen object.
+    # Initialize game and create a screen object
     pygame.init()
-    ai_settings=Settings()
-    screen=pygame.display.set_mode((ai_settings.screen_width,ai_settings.screen_height))
-    # screen.set_caption("Alien Invasion")
-    pygame.display.set_caption("Alien Invasion")
-    # Set the background color
-    # bg_color=(230,230,230)
-    # Make a group to store bullets in
+    setting = Settings()
+    screen = pygame.display.set_mode((setting.screen_width, setting.screen_heigh))
+    pygame.display.set_caption("My_Alien_Invasion")
 
-    # Make the Play button
-    play_button=Button(ai_settings,screen,"Play")
-
-
-
-    # Make a ship,a group of bullets, and a group of aliens
-    ship=Ship(ai_settings,screen)
-    # alien = Alien(ai_settings, screen)
+    # Create a ship object
+    ship = Ship(screen, setting)
+    # Create a group object to store bullets
     bullets = Group()
+    # Create a group object to store aliens
     aliens = Group()
+    # Create a gamestats object
+    gs=GameStats()
 
+    # Create a alien fleet
+    gf.create_fleet(setting,screen, aliens)
 
-    # Create the fleet of aliens.
-    gf.create_fleet(ai_settings,screen,ship,aliens)
-
-    # Create an instance to store game statistic and create a scoreboard.
-    stats=GameStats(ai_settings)
-    sb=Scoreboard(ai_settings,screen,stats)
-
-    # Start the main loop for the game.
     while True:
-
-        # Watch for keyboard and mouse events.
-        # for event in pygame.event.get():
-        #     if event.type==pygame.QUIT:
-        #         sys.exit()
-        gf.check_events(ai_settings,screen,stats,sb,play_button,ship,aliens,bullets)
-
-        if stats.game_active:
+        gf.check_events(setting, screen, ship, bullets)
+        if not gs.Is_End:
             ship.update()
+            bullets.update()
+            gf.check_fleet_edges(setting, aliens)
+            aliens.update()
+            gf.update_bullets(setting,screen, bullets,aliens,gs)
+            gf.judge_end(ship, aliens, screen, gs)
+            gf.check_aliens_bottom(screen, aliens, gs)
+        gf.update_screen(screen, setting, ship,bullets,aliens)
 
-            # Redraw the screen during each pass through the loop
-            # screen.fill(ai_settings.bg_color)
-            # ship.blitme()
-
-            # Get rid of bullets that have disappeared
-            gf.update_bullets(ai_settings,screen,stats,sb,ship,aliens,bullets)
-            gf.update_aliens(ai_settings,stats,sb,screen,ship,aliens,bullets)
-
-        gf.update_screen(ai_settings,screen,stats,sb,ship,aliens,bullets,play_button)
 
 
 run_game()
